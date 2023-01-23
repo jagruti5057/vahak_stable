@@ -131,29 +131,43 @@ class loadlistingSerializer(serializers.ModelSerializer):
         now = datetime.now(tz=timezone ).strftime("%Y-%m-%d %I:%M %p")
         expired_time = ((pd.to_datetime(now))-(pd.to_datetime(since)))
         expired_time=str(expired_time)
-        pl_time=since[12:17]
-        ex_time=expired_time[0:2]
-        timeset=expired_time[7:12]
-        th_set=timeset[0:2]
-        th_set=int(th_set)
-        tm_set=timeset[3:5]
-        tm_set=int(tm_set)
-        t_set =((th_set*60)+tm_set)/60
-        ex_time= int(ex_time)
-        req_time= (((ex_time*24)+t_set))
-     
-        if (req_time < 48):
-            e=PostLoad.objects.get(pk=instance.id)
-            e.expired_hour=int(48-req_time)
-            e.save()    
-        if (req_time > 48) :
+        pl_time=since[11:16] #postload time using slicing
+        total_daysfrom_pl=expired_time[0:2]
+        if (int(total_daysfrom_pl) <= 2  ):  
+
+            timeset=expired_time[7:12]
+            timeset_f_min = timeset
+            th_set=timeset_f_min[0:2]#time hour
+            th_set=int(th_set)
+            tm_set=timeset_f_min[4:7]
+            tm_set=int(tm_set)
+            t_set =((th_set*60)+tm_set)/60
+            total_daysfrom_pl= int(total_daysfrom_pl)
+            req_time= (((total_daysfrom_pl*24)+t_set))
+            if (req_time < 48):
+                rem_time = req_time
+                e=PostLoad.objects.get(pk=instance.id)
+                e.expired_hour=int(168-req_time)
+                e.save()    
+            if (req_time > 48) :
+                change_status= PostLoad.objects.get(pk=instance.id)
+                print (change_status)
+                change_status.status = "Expired"
+                change_status.expired_hour=0
+                print (change_status)
+                change_status.save()  
+            since2=s_date
+            return (since) 
+        else:
             change_status= PostLoad.objects.get(pk=instance.id)
             print (change_status)
             change_status.status = "Expired"
+            change_status.expired_hour = 0
             print (change_status)
-            change_status.save()            
-        since2=s_date
-        return (since ) 
+            change_status.save()  
+            since2=s_date
+            return (since)
+
 
     def get_expired_date(self, obj):
         enddate = (pd.to_datetime(since2) + pd.DateOffset(days=2)).strftime("%Y-%m-%d ")
@@ -168,35 +182,49 @@ class Lorrylistingserializer(serializers.ModelSerializer):
     updated_date=serializers.SerializerMethodField()
     
     def get_updated_date(self, instance):
-        since=instance.updated_date.strftime("%Y-%m-%d %I:%M %p")
-        since_date=instance.updated_date.strftime("%Y-%m-%d ")
+        since=instance.updated_date.strftime("%Y-%m-%d %I:%M %p") 
+        since_date=instance.updated_date.strftime("%Y-%m-%d ")#postload date
         timezone= pytz.timezone('Asia/Kolkata')
         now = datetime.now(tz=timezone ).strftime("%Y-%m-%d %I:%M %p")
         expired_time = ((pd.to_datetime(now))-(pd.to_datetime(since)))
         expired_time=str(expired_time)
-        pl_time=since[12:17]
-        ex_time=expired_time[0:2]
-        timeset=expired_time[7:12]
-        th_set=timeset[0:2]
-        th_set=int(th_set)
-        tm_set=timeset[3:5]
-        tm_set=int(tm_set)
-        t_set =((th_set*60)+tm_set)/60
-        ex_time= int(ex_time)
-        req_time= (((ex_time*24)+t_set))
-        if (req_time < 168):
-            rem_time = req_time
-            e=Attachnewlorry.objects.get(pk=instance.id)
-            e.expired_hour=int(168-req_time)
-            e.save()    
-        if (req_time > 168) :
+        pl_time=since[11:16] #postload time using slicing
+        total_daysfrom_pl=expired_time[0:2]
+        if (int(total_daysfrom_pl) <= 7  ):  
+
+            timeset=expired_time[7:12]
+            timeset_f_min = timeset
+            th_set=timeset_f_min[0:2]#time hour
+            th_set=int(th_set)
+            tm_set=timeset_f_min[4:7]
+            tm_set=int(tm_set)
+            t_set =((th_set*60)+tm_set)/60
+            total_daysfrom_pl= int(total_daysfrom_pl)
+            req_time= (((total_daysfrom_pl*24)+t_set))
+            if (req_time < 168):
+                rem_time = req_time
+                e=Attachnewlorry.objects.get(pk=instance.id)
+                e.expired_hour=int(168-req_time)
+                e.save()    
+            if (req_time > 168) :
+                change_status= Attachnewlorry.objects.get(pk=instance.id)
+                print (change_status)
+                change_status.status = "Expired"
+                # change_status.expired_hour=00
+                print (change_status)
+                change_status.save()  
+            enddate = (pd.to_datetime(since_date) + pd.DateOffset(days=7)).strftime("%Y-%m-%d ")
+            return (since) 
+        else:
             change_status= Attachnewlorry.objects.get(pk=instance.id)
             print (change_status)
             change_status.status = "Expired"
+            change_status.expired_hour = 0
             print (change_status)
             change_status.save()  
-        enddate = (pd.to_datetime(since_date) + pd.DateOffset(days=7)).strftime("%Y-%m-%d ")
-        return (since) 
+            enddate = (pd.to_datetime(since_date) + pd.DateOffset(days=7)).strftime("%Y-%m-%d ")
+            return (since)
+
 
     class Meta:
         model = Attachnewlorry
