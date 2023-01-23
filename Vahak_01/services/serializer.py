@@ -259,9 +259,14 @@ class lorrybidSerializer(serializers.ModelSerializer):
         fields=['id','username', 'vehicle_name','vehicle_load_capacity','vehicle_type','profile_image','enter_price']
 
 class loadbidSerializer(serializers.ModelSerializer):
-     class Meta:
+    postload_date=serializers.SerializerMethodField()
+
+    def get_postload_date(self, obj):
+        since=obj.postload_date.strftime("%Y-%m-%d %I:%M %p")
+        return since
+    class Meta:
         model=PostLoad
-        fields=['id','pickup_location','drop_location']
+        fields=['id','pickup_location','drop_location','postload_date']
 
 class MyBidSerializer(serializers.ModelSerializer):
     Attachnewlorry=lorrybidSerializer(read_only=True, many=True)
@@ -273,6 +278,11 @@ class MyBidSerializer(serializers.ModelSerializer):
 class loadsentSerializer(serializers.ModelSerializer):
     username=serializers.SerializerMethodField()
     profile_image =serializers.ImageField(source="user.profile_image")
+    postload_date=serializers.SerializerMethodField()
+
+    def get_postload_date(self, obj):
+        since=obj.postload_date.strftime("%Y-%m-%d %I:%M %p")
+        return since
   
     def get_username(self,user,*args):
         obj = User.objects.get(pk=user.id)
@@ -280,7 +290,7 @@ class loadsentSerializer(serializers.ModelSerializer):
     
     class Meta:
         model=PostLoad
-        fields=['id','username','quantity','material_name','price','pickup_location','drop_location','profile_image',]
+        fields=['id','username','quantity','material_name','price','pickup_location','drop_location','profile_image','postload_date']
 
 class MyBidlorrySerializer(serializers.ModelSerializer):
     PostLoad=loadsentSerializer(read_only=True, many=True)
